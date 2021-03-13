@@ -1,2 +1,7 @@
 # macOS stuff
 .DS_Store
+
+# Python stuff
+venv
+__pycache__
+*.egg-info
