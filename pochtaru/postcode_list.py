@@ -18,6 +18,8 @@ def open_address_list(address_list_filename: str,
     addr_df = pd.read_csv(address_list_filename, sep=';', dtype=str)
     addr_s = addr_df[address_column_name]
     print(f'Loaded {len(addr_s)} addresses for querying.')
+    addr_s = addr_s.drop_duplicates()
+    print(f'of them {len(addr_s)} unique addresses.')
     return addr_s
 
 
