@@ -29,8 +29,18 @@ def open_cache(cache_filename: str) -> pd.DataFrame:
         cache = pd.read_csv(cache_filename, sep=';', dtype=str)
     except FileNotFoundError:
         cache = pd.DataFrame(columns=['address', 'postcode'])
+    cache = cache.drop_duplicates()
     print(f'{len(cache)} addresses in cache.')
     return cache
+
+
+def filter_address_list(addr_s: pd.Series,
+                        cache_df: pd.DataFrame) -> pd.DataFrame:
+    """Remove addresses that already exist in the cache from the
+    address list.
+    """
+    new_addresses = addr_s.loc[~addr_s.isin(cache_df.address)].copy()
+    return new_addresses
 
 
 def get_a_record(address: str, cache: pd.DataFrame) -> pd.DataFrame:
@@ -38,7 +48,7 @@ def get_a_record(address: str, cache: pd.DataFrame) -> pd.DataFrame:
 
     Return a new (updated) cache DataFrame.
     """
-    print(f'Querying {address:<50}…', end='', flush=True)
+    print(f'Querying {address[-50:]}…', end='', flush=True)
     postcode = pochtaru.get_postcode(address)
     cache_row = {'address': address, 'postcode': postcode}
     cache_upd = cache.append(cache_row, ignore_index=True)
@@ -63,11 +73,15 @@ def download_postcode_list(address_list_filename: str,
     """
     addr = open_address_list(address_list_filename, address_column_name)
     cache = open_cache(cache_filename)
+    addr = filter_address_list(addr, cache)
+    if addr.empty:
+        print('Nothing to download… Quitting')
+        return None
     for idx, address in enumerate(addr, 1):
         try:
             cache = get_a_record(address, cache)
         except KeyboardInterrupt:
-            print('Interrupted by user... Quitting')
+            print('Interrupted by user… Quitting')
             break
         if idx >= limit:
             break

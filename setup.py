@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pochtaru',
-    version='0.0.2',
+    version='0.0.3',
     description='Get official postcode information from pochta.ru',
     packages=find_packages()
 )
